@@ -43,7 +43,9 @@
 			offset: [0, 0], 
 			position: 'center right',
 			singleError: false, 			// validate all inputs at once
-			speed: 'normal'				// message's fade-in speed			
+			speed: 'normal',				// message's fade-in speed			
+			appendTo: 'body',	// name of selector to append error messages to
+			relative: false		// whether error messages are positioned relatively or not to parent element
 		},
 
 
@@ -154,15 +156,20 @@
 				$.each(errs, function(i, err) {
 						
 					// add error class	
-					var input = err.input;					
+					var input = err.input;				
+					var name = input.attr("name");	
 					input.addClass(conf.errorClass);
 					
 					// get handle to the error container
 					var msg = input.data("msg.el"); 
 					
 					// create it if not present
-					if (!msg) { 
-						msg = $(conf.message).addClass(conf.messageClass).appendTo(document.body);
+					if (!msg) {
+						var target = conf.appendTo;
+						if (conf.relative === true) {
+							target = input.parents(conf.appendTo).get(0);
+						}
+						msg = $(conf.message).addClass(conf.messageClass).appendTo(target);
 						input.data("msg.el", msg);
 					}  
 					
@@ -182,8 +189,14 @@
 					// insert into correct position (relative to the field)
 					var pos = getPosition(input, msg, conf); 
 					 
-					msg.css({ visibility: 'visible', position: 'absolute', top: pos.top, left: pos.left })
-						.fadeIn(conf.speed);     
+					var position = "absolute";
+					if (conf.relative === true) {
+						msg.css({ visibility: 'visible'});
+					} else {
+						msg.css({ visibility: 'visible', position: position, top: pos.top, left: pos.left });
+					}
+					msg.fadeIn(conf.speed);
+					msg.addClass("error-"+name);     
 				});
 						
 				
